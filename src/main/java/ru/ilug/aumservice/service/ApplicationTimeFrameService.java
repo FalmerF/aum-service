@@ -24,7 +24,8 @@ public class ApplicationTimeFrameService {
 
         return repository.getApplicationTimeFramesByEndTimeGreaterThanEqual(minTime)
                 .collectList()
-                .flatMap(frames -> mergeFrames(frames, newFrames));
+                .flatMap(frames -> mergeFrames(frames, newFrames))
+                .then();
     }
 
     private long getFramesMinTime(Collection<ApplicationTimeFrame> frames) {
@@ -32,15 +33,15 @@ public class ApplicationTimeFrameService {
     }
 
     private long getFramesMaxTime(Collection<ApplicationTimeFrame> frames) {
-        return frames.stream().mapToLong(ApplicationTimeFrame::getStartTime).max().orElse(0L);
+        return frames.stream().mapToLong(ApplicationTimeFrame::getEndTime).max().orElse(0L);
     }
 
     private Mono<Void> mergeFrames(Collection<ApplicationTimeFrame> frames, Collection<ApplicationTimeFrame> newFrames) {
         List<ApplicationTimeFrame> framesToRemove = new ArrayList<>();
         List<ApplicationTimeFrame> framesToSave = new ArrayList<>();
 
-        for (ApplicationTimeFrame frame : frames) {
-            List<ApplicationTimeFrame> framesToMerge = new ArrayList<>(newFrames.stream()
+        for (ApplicationTimeFrame frame : newFrames) {
+            List<ApplicationTimeFrame> framesToMerge = new ArrayList<>(frames.stream()
                     .filter(f -> f.getExePath().equals(frame.getExePath()))
                     .filter(f -> isIntersectingFrames(f, frame))
                     .toList());

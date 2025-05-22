@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Data
@@ -15,6 +16,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @Accessors(chain = true)
 public class ApplicationTimeFrame {
 
+    @Id
     private long id;
     private String exePath;
     private String windowsClass;

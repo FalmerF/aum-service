@@ -1,6 +1,7 @@
 package ru.ilug.aumservice.web;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,8 +12,9 @@ import ru.ilug.aumservice.service.ApplicationTimeFrameService;
 
 import java.util.List;
 
+@Log4j2
 @RestController
-@RequestMapping("/time-frame")
+@RequestMapping("/timeframe")
 @RequiredArgsConstructor
 public class TimeFrameWebController {
 
