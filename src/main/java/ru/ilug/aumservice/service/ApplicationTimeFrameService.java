@@ -5,12 +5,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import ru.ilug.aumservice.data.model.ApplicationStatistic;
 import ru.ilug.aumservice.data.model.ApplicationTimeFrame;
 import ru.ilug.aumservice.data.repository.ApplicationTimeFrameRepository;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +25,22 @@ public class ApplicationTimeFrameService {
                 .collectList()
                 .flatMap(frames -> mergeFrames(frames, newFrames))
                 .then();
+    }
+
+    public Flux<ApplicationStatistic> getStatistics(long startTime, long endTime) {
+        Map<String, ApplicationStatistic> statistics = new HashMap<>();
+
+        return repository.getApplicationTimeFrameByEndTimeGreaterThanEqualOrStartTimeLessThanEqual(startTime, endTime)
+                .flatMap(frame -> {
+                    long frameStartTime = Math.max(frame.getStartTime(), startTime);
+                    long frameEndTime = Math.min(frame.getEndTime(), endTime);
+                    long seconds = (frameEndTime - frameStartTime) / 1000;
+
+                    ApplicationStatistic statistic = statistics.computeIfAbsent(frame.getExePath(), key -> new ApplicationStatistic(key, 0));
+                    statistic.addSeconds(seconds);
+
+                    return Mono.just(statistic);
+                }).thenMany(Flux.fromIterable(statistics.values()));
     }
 
     private long getFramesMinTime(Collection<ApplicationTimeFrame> frames) {

@@ -8,6 +8,8 @@ import ru.ilug.aumservice.data.model.ApplicationTimeFrame;
 @Repository
 public interface ApplicationTimeFrameRepository extends R2dbcRepository<ApplicationTimeFrame, String> {
 
-    Flux<ApplicationTimeFrame> getApplicationTimeFramesByEndTimeGreaterThanEqual(long endTimeIsGreaterThan);
+    Flux<ApplicationTimeFrame> getApplicationTimeFramesByEndTimeGreaterThanEqual(long endTime);
+
+    Flux<ApplicationTimeFrame> getApplicationTimeFrameByEndTimeGreaterThanEqualOrStartTimeLessThanEqual(long endTime, long startTime);
 
 }

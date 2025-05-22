@@ -3,14 +3,15 @@ package ru.ilug.aumservice.web;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
+import ru.ilug.aumservice.data.model.ApplicationStatistic;
 import ru.ilug.aumservice.data.model.ApplicationTimeFrame;
 import ru.ilug.aumservice.service.ApplicationTimeFrameService;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Log4j2
 @RestController
@@ -23,6 +24,13 @@ public class TimeFrameWebController {
     @PostMapping(path = "/post", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void postTimeFrames(@RequestBody List<ApplicationTimeFrame> frames) {
         applicationTimeFrameService.addTimeFrames(frames).subscribe();
+    }
+
+    @GetMapping(path = "/statistics", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Flux<ApplicationStatistic> getStatistics() {
+        long endTime = Instant.now().toEpochMilli();
+        long startTime = endTime - TimeUnit.DAYS.toMillis(1);
+        return applicationTimeFrameService.getStatistics(startTime, endTime);
     }
 
 }
