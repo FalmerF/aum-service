@@ -1,6 +1,7 @@
 package ru.ilug.aumservice.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -11,6 +12,7 @@ import ru.ilug.aumservice.data.repository.ApplicationTimeFrameRepository;
 
 import java.util.*;
 
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class ApplicationTimeFrameService {
@@ -30,7 +32,7 @@ public class ApplicationTimeFrameService {
     public Flux<ApplicationStatistic> getStatistics(long startTime, long endTime) {
         Map<String, ApplicationStatistic> statistics = new HashMap<>();
 
-        return repository.getApplicationTimeFrameByEndTimeGreaterThanEqualOrStartTimeLessThanEqual(startTime, endTime)
+        return repository.getApplicationTimeFramesInRange(endTime, startTime)
                 .flatMap(frame -> {
                     long frameStartTime = Math.max(frame.getStartTime(), startTime);
                     long frameEndTime = Math.min(frame.getEndTime(), endTime);
