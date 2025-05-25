@@ -10,7 +10,9 @@ import ru.ilug.aumservice.data.model.ApplicationStatistic;
 import ru.ilug.aumservice.data.model.ApplicationTimeFrame;
 import ru.ilug.aumservice.data.repository.ApplicationTimeFrameRepository;
 
+import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Log4j2
 @Service
@@ -21,11 +23,17 @@ public class ApplicationTimeFrameService {
 
     @Transactional
     public Mono<Void> addTimeFrames(Collection<ApplicationTimeFrame> newFrames) {
+        Collection<ApplicationTimeFrame> filteredFrames = filterIllegalTimeFrames(newFrames);
+
+        if (newFrames.isEmpty()) {
+            return Mono.empty();
+        }
+
         long minTime = getFramesMinTime(newFrames);
 
         return repository.getApplicationTimeFramesByEndTimeGreaterThanEqual(minTime)
                 .collectList()
-                .flatMap(frames -> mergeFrames(frames, newFrames))
+                .flatMap(frames -> mergeFrames(frames, filteredFrames))
                 .then();
     }
 
@@ -43,6 +51,14 @@ public class ApplicationTimeFrameService {
 
                     return Mono.just(statistic);
                 }).thenMany(Flux.fromIterable(statistics.values()));
+    }
+
+    private Collection<ApplicationTimeFrame> filterIllegalTimeFrames(Collection<ApplicationTimeFrame> frames) {
+        long minMillis = Instant.now().toEpochMilli() - TimeUnit.MINUTES.toMillis(15);
+        return frames.stream()
+                .filter(f -> f.getExePath().isBlank())
+                .filter(f -> f.getStartTime() >= minMillis)
+                .toList();
     }
 
     private long getFramesMinTime(Collection<ApplicationTimeFrame> frames) {
