@@ -56,7 +56,7 @@ public class ApplicationTimeFrameService {
     private Collection<ApplicationTimeFrame> filterIllegalTimeFrames(Collection<ApplicationTimeFrame> frames) {
         long minMillis = Instant.now().toEpochMilli() - TimeUnit.MINUTES.toMillis(15);
         return frames.stream()
-                .filter(f -> f.getExePath().isBlank())
+                .filter(f -> !f.getExePath().isBlank())
                 .filter(f -> f.getStartTime() >= minMillis)
                 .toList();
     }
