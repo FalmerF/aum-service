@@ -1,5 +1,6 @@
 package ru.ilug.aumservice.data.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +18,7 @@ import org.springframework.data.relational.core.mapping.Table;
 public class ApplicationTimeFrame {
 
     @Id
+    @JsonIgnore
     private long id;
     private String exePath;
     private String windowsClass;
