@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: aum-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://auth.ilug.ru
+  cloud:
+    vault:
+      authentication: APPROLE
+      uri: https://vault.ilug.ru
+      kv:
+        enabled: true
+        backend: kv
+        application-name: aum-service
+        default-context: common
+  config:
+    import: file:./env.properties,vault://
+
+server:
+  port: 8356
