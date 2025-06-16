@@ -20,6 +20,7 @@ public class ApplicationTimeFrame {
     @Id
     @JsonIgnore
     private long id;
+    private long userId;
     private String exePath;
     private String windowsClass;
     private long startTime;

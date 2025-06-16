@@ -22,7 +22,7 @@ public class ApplicationTimeFrameService {
     private final ApplicationTimeFrameRepository repository;
 
     @Transactional
-    public Mono<Void> addTimeFrames(Collection<ApplicationTimeFrame> newFrames) {
+    public Mono<Void> addTimeFrames(long userId, Collection<ApplicationTimeFrame> newFrames) {
         Collection<ApplicationTimeFrame> filteredFrames = filterIllegalTimeFrames(newFrames);
 
         if (newFrames.isEmpty()) {
@@ -31,16 +31,16 @@ public class ApplicationTimeFrameService {
 
         long minTime = getFramesMinTime(newFrames);
 
-        return repository.getApplicationTimeFramesByEndTimeGreaterThanEqual(minTime)
+        return repository.getApplicationTimeFramesByUserIdAndEndTimeGreaterThanEqual(userId, minTime)
                 .collectList()
-                .flatMap(frames -> mergeFrames(frames, filteredFrames))
+                .flatMap(frames -> mergeFrames(userId, frames, filteredFrames))
                 .then();
     }
 
-    public Flux<ApplicationStatistic> getStatistics(long startTime, long endTime) {
+    public Flux<ApplicationStatistic> getStatistics(long userId, long startTime, long endTime) {
         Map<String, ApplicationStatistic> statistics = new HashMap<>();
 
-        return repository.getApplicationTimeFramesInRange(endTime, startTime)
+        return repository.getApplicationTimeFramesInRange(userId, endTime, startTime)
                 .flatMap(frame -> {
                     long frameStartTime = Math.max(frame.getStartTime(), startTime);
                     long frameEndTime = Math.min(frame.getEndTime(), endTime);
@@ -69,7 +69,7 @@ public class ApplicationTimeFrameService {
         return frames.stream().mapToLong(ApplicationTimeFrame::getEndTime).max().orElse(0L);
     }
 
-    private Mono<Void> mergeFrames(Collection<ApplicationTimeFrame> frames, Collection<ApplicationTimeFrame> newFrames) {
+    private Mono<Void> mergeFrames(long userId, Collection<ApplicationTimeFrame> frames, Collection<ApplicationTimeFrame> newFrames) {
         List<ApplicationTimeFrame> framesToRemove = new ArrayList<>();
         List<ApplicationTimeFrame> framesToSave = new ArrayList<>();
 
@@ -82,7 +82,7 @@ public class ApplicationTimeFrameService {
             framesToRemove.addAll(framesToMerge);
             framesToMerge.add(0, frame);
 
-            ApplicationTimeFrame mergedFrame = mergeFrames(framesToMerge);
+            ApplicationTimeFrame mergedFrame = mergeFrames(userId, framesToMerge);
             framesToSave.add(mergedFrame);
         }
 
@@ -93,17 +93,14 @@ public class ApplicationTimeFrameService {
                 .then();
     }
 
-    private ApplicationTimeFrame mergeFrames(List<ApplicationTimeFrame> frames) {
-        if (frames.size() == 1) {
-            return frames.get(0);
-        }
-
+    private ApplicationTimeFrame mergeFrames(long userId, List<ApplicationTimeFrame> frames) {
         long minTime = getFramesMinTime(frames);
         long maxTime = getFramesMaxTime(frames);
 
         ApplicationTimeFrame frame = frames.get(0);
 
         return ApplicationTimeFrame.builder()
+                .userId(userId)
                 .exePath(frame.getExePath())
                 .windowsClass(frame.getWindowsClass())
                 .startTime(minTime)

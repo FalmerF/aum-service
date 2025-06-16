@@ -9,9 +9,9 @@ import ru.ilug.aumservice.data.model.ApplicationTimeFrame;
 @Repository
 public interface ApplicationTimeFrameRepository extends R2dbcRepository<ApplicationTimeFrame, String> {
 
-    Flux<ApplicationTimeFrame> getApplicationTimeFramesByEndTimeGreaterThanEqual(long endTime);
+    Flux<ApplicationTimeFrame> getApplicationTimeFramesByUserIdAndEndTimeGreaterThanEqual(long userId, long endTime);
 
-    @Query("SELECT * FROM application_time_frame f WHERE ((f.start_time <= :endTime and f.start_time >= :startTime) or (f.end_time <= :endTime and f.end_time >= :startTime))")
-    Flux<ApplicationTimeFrame> getApplicationTimeFramesInRange(long endTime, long startTime);
+    @Query("SELECT * FROM application_time_frame f WHERE (f.user_id = :userId and ((f.start_time <= :endTime and f.start_time >= :startTime) or (f.end_time <= :endTime and f.end_time >= :startTime)))")
+    Flux<ApplicationTimeFrame> getApplicationTimeFramesInRange(long userId, long endTime, long startTime);
 
 }
